@@ -22,7 +22,7 @@ void create_array_on_heap() {
 
     int *array_list[size];
     for (int i = 0; i < size; i++) {
-        array_list[i] = (int*) malloc(PAGE_SIZE * 256);
+        array_list[i] = (int*) malloc(PAGE_SIZE * 256 * 1024);
         sleep(1);
     }
 
@@ -43,15 +43,16 @@ int main(int argc, char *argv[]) {
     signal(SIGSEGV, sigsegv_handler);
     sleep(10);
 
-//    create_array_on_stack();
+    create_array_on_stack();
 
 //    create_array_on_heap();
 
-//    errno = 0;
-    int* ptr = (int*) mmap(NULL, 10 * PAGE_SIZE, PROT_NONE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-//    log_error();
+    errno = 0;
+    char* ptr = (char*) mmap(NULL, 10 * PAGE_SIZE, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    log_error();
 
-    printf("\nmapped 10 pages\n");
+//    printf("\nmapped 10 pages\n");
+//    printf("ptr = %p\n", ptr);
 
     sleep(5);
 
@@ -66,8 +67,8 @@ int main(int argc, char *argv[]) {
 
     sleep(5);
 
-    munmap(ptr + PAGE_SIZE * 3, PAGE_SIZE * 3);
-    printf("\npages unmapped\n");
+//    munmap(ptr + 4096 * 4, 4096 * 3);
+//    printf("\npages unmapped\n");
 
     sleep(100);
 }

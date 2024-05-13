@@ -41,6 +41,8 @@ void buffer_function() {
     free(my_buffer1);
     printf("my_buffer1 after free: %s\n", my_buffer1);
 
+    free(my_buffer1);
+
     char* my_buffer2 = (char*) malloc(100);
     memcpy(my_buffer2, string, 12);
     printf("my_buffer2 before free: %s\n", my_buffer2);
@@ -54,19 +56,21 @@ void env_function() {
     printf("\nEnvironment_function:\n");
 
     char* my_env_var = getenv("MY_ENV_VAR");
-    printf("my_env_var before: %s\n", my_env_var);
+    printf("my_env_var before: %p\n", my_env_var);
+
+
 
     setenv("MY_ENV_VAR", "SECOND", 1);
 
     my_env_var = getenv("MY_ENV_VAR");
-    printf("my_env_var after: %s\n", my_env_var);
+    printf("my_env_var after: %p\n", my_env_var);
 }
 
 int main() {
     printf("my pid: %d\n", getpid());
-    my_function();
+//    my_function();
 
-    print_local_var_addr();
+//    print_local_var_addr();
 
 //    buffer_function();
 
