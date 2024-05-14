@@ -15,6 +15,9 @@ int main() {
     int my_local_var = 5;
 
     printf("pid = %d\n", getpid());
+
+//    sleep(15);
+
     printf("my_local_var:\taddress = %p, value = %d\n", &my_local_var, my_local_var);
     printf("my_global_var:\taddress = %p, value = %d\n\n\n", &my_global_var, my_global_var);
 
@@ -30,6 +33,7 @@ int main() {
         my_local_var = 123;
         my_global_var = 777;
 
+        printf("child: my_local_var:\taddress = %p, value = %d\n", &my_local_var, my_local_var);
         printf("child: my_global_var:\taddress = %p, value = %d\n", &my_global_var, my_global_var);
         printf("child: pid = %d, parent pid = %d\n", getpid(), getppid());
 
@@ -47,8 +51,6 @@ int main() {
         wait(&status);
         printf("parent: exit status of child proc = %d\n", WEXITSTATUS(status));
 
-//        if (WIFEXITED(status)) {
-//        }
     }
 //    printf("new pid = %d, parent pid = %d\n", getpid(), getppid());
 

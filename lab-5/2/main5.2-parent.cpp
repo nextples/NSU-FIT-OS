@@ -40,6 +40,6 @@ int main() {
 
     else if (parent_pid > 0) {
         printf("parent pid = %d\n", parent_pid);
-        sleep(30);
+        sleep(40);
     }
 }
