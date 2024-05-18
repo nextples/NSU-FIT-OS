@@ -41,7 +41,7 @@ int main() {
 
 //        printf("\n");
     } else if (child_pid > 0){
-
+        sleep(1);
         printf("parent: my_local_var:\taddress = %p, value = %d\n", &my_local_var, my_local_var);
         printf("parent: my_global_var:\taddress = %p, value = %d\n", &my_global_var, my_global_var);
         printf("parent: pid = %d, parent pid = %d\n", getpid(), getppid());

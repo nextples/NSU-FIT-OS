@@ -29,17 +29,17 @@ int main() {
             log_error();
             return EXIT_FAILURE;
         } else if (child_pid == 0) {
-            sleep(30);
+            sleep(3);
+            printf("child_pid after parent dead: pid = %d, ppid = %d\n", getpid(), getppid());
         } else if (child_pid > 0) {
-            printf("child_pid = %d\n", child_pid);
-            printf("zombie parent process created. pid = %d\n", getpid());
+            printf("child_pid before parent dead: pid = %d, ppid = %d\n", child_pid, getpid());
+            sleep(1);
+            printf("zombie parent process created.\n");
             exit(5);
-
         }
     }
 
     else if (parent_pid > 0) {
-        printf("parent pid = %d\n", parent_pid);
         sleep(40);
     }
 }
