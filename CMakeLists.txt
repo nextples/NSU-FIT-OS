@@ -7,4 +7,5 @@ add_executable(writer lab-6/1/writer.cpp)
 add_executable(reader lab-6/1/reader.cpp)
 add_executable(pipe lab-6/2/pipe.cpp)
 add_executable(named-pipe lab-6/2/named-pipe.cpp)
-
+add_executable(named-pipe-reader lab-6/2/named-pipe-reader.cpp)
+add_executable(named-pipe-writer lab-6/2/named-pipe-writer.cpp)
