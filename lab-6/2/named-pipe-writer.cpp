@@ -27,8 +27,9 @@ int main() {
     while (1) {
         for (int i = 0; i < PAGE_SIZE / sizeof(unsigned int); i++) {
             write(fd, &val, sizeof(unsigned int));
+            printf("write: %u\n", val);
             val++;
-//            sleep(1);
+            sleep(1);
         }
     }
 

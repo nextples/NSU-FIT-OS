@@ -34,7 +34,7 @@ int main() {
             printf("%u ", cur_val);
             fflush(stdout);
             prev_val = cur_val;
-//            sleep(1);
+            sleep(1);
         }
     }
 
