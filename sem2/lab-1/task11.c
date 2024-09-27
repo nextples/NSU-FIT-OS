@@ -16,7 +16,7 @@ void *my_thread(void *arg) {
 	// printf("my_thread [%d %d %d %lu]: Hello from my_thread!\n", getpid(), getppid(), gettid(), pthread_self());
 
 	// printf("my_thread [%d %d %d %lu]: Hello from my_thread!\nlocal: [%d, %p]\nlocal_static: [%d, %p]\nlocal_const: [%d, %p]\nglobal: [%d, %p]\n\n",
-		// getpid(), getppid(), gettid(), pthread_self(), local, &local, local_static, &local_static, local_const, &local_const, global, &global);
+			// getpid(), getppid(), gettid(), pthread_self(), local, &local, local_static, &local_static, local_const, &local_const, global, &global);
 
 	if (gettid() % 5 == 0) {
 		local = 10;
