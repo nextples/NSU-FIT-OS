@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -18,8 +19,9 @@ void *int_routine(void *arg) {
 }
 
 void *string_routine(void *arg) {
+    // char* str = "Hello, World";
     char *str = (char *)malloc(14);
-    // strcpy(str, "Hello, World!");
+    strcpy(str, "Hello, World!");
 
     printf("string_routine [%d %d %d %ld]: Return %s\n", getpid(), getppid(), gettid(), pthread_self(), str);
 
@@ -41,7 +43,7 @@ int main() {
     pthread_join(tid, &res);
 
     // Вариант 1.2.b
-    printf("main [%d %d %d]: int_routine return %d\n", getpid(), getppid(), gettid(), *(int*)res);
+    // printf("main [%d %d %d]: int_routine return %d\n", getpid(), getppid(), gettid(), *(int*)res);
 
     // Вариант 1.2.c
     printf("main [%d %d %d]: string_routine return %s\n", getpid(), getppid(), gettid(), (char*)res);

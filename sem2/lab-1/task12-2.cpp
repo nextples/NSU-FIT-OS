@@ -7,7 +7,7 @@
 
 void *thread_routine(void *arg) {
     printf("int_routine [%d %d %d %ld]: Working\n", getpid(), getppid(), gettid(), pthread_self());
-    // pthread_detach(pthread_self());
+    pthread_detach(pthread_self());
     return NULL;
 }
 
@@ -21,6 +21,7 @@ int main() {
     pthread_t tid;
     while (1) {
         pthread_create(&tid, NULL, thread_routine, NULL);
+        // pthread_join(tid, NULL);
     }
 
     pthread_attr_destroy(&attr);

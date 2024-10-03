@@ -18,13 +18,13 @@ void* thread_routine(void* arg) {
     return NULL;
 }
 
-void* main_routine(void* arg) {
+int main() {
     pthread_t thread;
     pthread_attr_t attr;
 
     struct test_t* test_arg = (struct test_t*) malloc(sizeof(struct test_t));
     test_arg->num = 111;
-    test_arg->str = "Hello";
+    test_arg->str = strdup("Hello World!");;
 
     pthread_attr_init(&attr);
     pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
@@ -33,17 +33,6 @@ void* main_routine(void* arg) {
 
     sleep(5);
     free(test_arg);
-
     pthread_attr_destroy(&attr);
-    return NULL;
-}
-
-int main() {
-    pthread_t thread;
-
-    pthread_create(&thread, NULL, main_routine, NULL);
-    pthread_join(thread, NULL);
-
-    sleep(5);
     return 0;
 }

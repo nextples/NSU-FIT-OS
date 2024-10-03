@@ -19,7 +19,7 @@ void* thread_routine(void* arg) {
     return NULL;
 }
 
-void* main_routine(void* arg) {
+int main() {
     pthread_t thread;
     pthread_attr_t attr;
 
@@ -33,15 +33,7 @@ void* main_routine(void* arg) {
     pthread_create(&thread, &attr, thread_routine, &test_arg);
 
     pthread_attr_destroy(&attr);
-    return NULL;
-}
-
-int main() {
-    pthread_t thread;
-
-    pthread_create(&thread, NULL, main_routine, NULL);
-    pthread_join(thread, NULL);
-
-    sleep(5);
+    printf("Main end\n");
+    pthread_exit(NULL);
     return 0;
 }

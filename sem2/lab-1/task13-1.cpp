@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <string.h>
 #include <unistd.h>
 
 struct test_t {
@@ -21,7 +22,7 @@ int main() {
 
     struct test_t test_arg;
     test_arg.num = 111;
-    test_arg.str = "Hello";
+    test_arg.str = strdup("Hello World!");
 
     pthread_create(&thread, NULL, thread_routine, (void*) &test_arg);
 
