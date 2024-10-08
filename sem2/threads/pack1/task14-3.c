@@ -7,14 +7,19 @@
 
 void cleanup(void *arg) {
     printf("clenaup [%d %d %d]: Running\n", getpid(), getppid(), gettid());
-    free(arg);
+    if (arg != NULL) {
+        free(arg);
+    }
 }
 
 void *print_hello_world(void *arg) {
-    char *str = (char*) malloc(14);
+    char *str = NULL;
+    pthread_cleanup_push(cleanup, str);
+
+    str = (char*) malloc(14);
+
     strcpy(str, "Hello, World!");
 
-    pthread_cleanup_push(cleanup, str);
 
     while (true) {
         printf("print_hello_world [%d %d %d %ld]: str = %s\n", getpid(), getppid(), gettid(), pthread_self(), str);
