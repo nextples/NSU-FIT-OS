@@ -21,6 +21,7 @@ typedef struct mythread_t {
     void*                    arg;        // Аргумент для функции
     void*                    ret;        // Возвращаемое значение функции
     int                      exited;     // Флаг завершения потока
+    int                      joined;       // Флаг ожидания потока
     int                      detached;   // Флаг для detached потока
 } mythread_t;
 

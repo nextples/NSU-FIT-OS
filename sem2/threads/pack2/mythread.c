@@ -5,22 +5,22 @@
 #include <string.h>
 
 void print_mythread(mythread_t* thread) {
-     printf("mythread_t {\n\ttid: %d,\n\tstack: %p,\n\troutine: %p,\n\targ: %p,\n\tret: %p,\n\texited: %d,\n\tdetached: %d\n}\n",
-         thread->tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->detached);
+     printf("mythread_t {\n\ttid: %d,\n\tstack: %p,\n\troutine: %p,\n\targ: %p,\n\tret: %p,\n\texited: %d,\n\tjoined: %d\n\tdetached: %d\n}\n",
+         thread->tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->joined, thread->detached);
 }
 
 // Запуск функции потока
 int mythread_startup(void* arg) {
     mythread_t* thread = (mythread_t*)arg;
 
-    printf("mythread_startup [%d]: starting thread...\n", thread->tid);
-    print_mythread(thread);
+    printf("mythread_startup [%d]: starting thread func...\n", thread->tid);
+    // print_mythread(thread);
 
     // Выполнение основной функции потока
     thread->ret = thread->routine(thread->arg);
     thread->exited = 1;
 
-    printf("mythread_startup [%d]: terminating thread...\n", thread->tid);
+    printf("mythread_startup [%d]: terminating thread func...\n", thread->tid);
     // print_mythread(thread);
 
     if (thread->detached == DETACHED) {
@@ -28,6 +28,14 @@ int mythread_startup(void* arg) {
         munmap(thread->stack, STACK_SIZE);
         munmap(thread, sizeof(mythread_t));
     }
+
+    // print_mythread(thread);
+    while (!thread->joined) {
+        printf("sleep....\n");
+        sleep(1);
+    }
+    print_mythread(thread);
+    printf("mythread_startup [%d]: thread joined\n", thread->tid);
 
     return 0;
 }
@@ -46,6 +54,7 @@ int mythread_create(mythread_t* thread, mythread_routine_t routine, void* arg, i
     thread->arg = arg;
     thread->exited = 0;
     thread->detached = type;
+    thread->joined = 0;
 
     mythread_t* new_thread = thread->stack + STACK_SIZE - sizeof(mythread_t);
     *new_thread = *thread;
@@ -80,12 +89,16 @@ int mythread_join(mythread_t* thread, void** ret) {
         *ret = thread->ret;
     }
 
+    thread->joined = 1;
+
     printf("joinable free\n");
     if (munmap(thread->stack, STACK_SIZE) == -1) {
         perror("Fail to unmap stack\n");
         return -1;
     }
 
+
+    printf("CHECK\n");
     return 0;
 }
 
