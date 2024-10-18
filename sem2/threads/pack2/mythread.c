@@ -4,17 +4,17 @@
 #include <sys/wait.h>
 #include <string.h>
 
-// void print_mythread(mythread_t* thread) {
-//     printf("mythread_t {\n\ttid: %d,\n\tstack: %p,\n\troutine: %p,\n\targ: %p,\n\tret: %p,\n\texited: %d,\n\tdetached: %d\n}\n",
-//         thread->tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->detached);
-// }
+void print_mythread(mythread_t* thread) {
+     printf("mythread_t {\n\ttid: %d,\n\tstack: %p,\n\troutine: %p,\n\targ: %p,\n\tret: %p,\n\texited: %d,\n\tdetached: %d\n}\n",
+         thread->tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->detached);
+}
 
 // Запуск функции потока
 int mythread_startup(void* arg) {
     mythread_t* thread = (mythread_t*)arg;
 
     printf("mythread_startup [%d]: starting thread...\n", thread->tid);
-    // print_mythread(thread);
+    print_mythread(thread);
 
     // Выполнение основной функции потока
     thread->ret = thread->routine(thread->arg);
@@ -92,7 +92,7 @@ int mythread_join(mythread_t* thread, void** ret) {
 int mythread_detach(mythread_t* thread) {
     if (thread->detached == DETACHED) {
         perror("Thread is detached already\n");
-        return EINVAL;
+        return -1;
     }
     thread->detached = DETACHED;
     return 0;
