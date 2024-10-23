@@ -1,6 +1,5 @@
 #define _GNU_SOURCE
 #include "mythread.h"
-#include <errno.h>
 #include <sys/wait.h>
 #include <string.h>
 
@@ -9,26 +8,12 @@ void print_mythread(mythread_t* thread) {
          thread->tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->detached);
 }
 
-// Запуск функции потока
 int mythread_startup(void* arg) {
     mythread_t* thread = (mythread_t*)arg;
 
-    printf("mythread_startup [%d]: starting thread...\n", thread->tid);
-    print_mythread(thread);
-
-    // Выполнение основной функции потока
     thread->ret = thread->routine(thread->arg);
     thread->exited = 1;
-
-    printf("mythread_startup [%d]: terminating thread...\n", thread->tid);
-    // print_mythread(thread);
-
-    if (thread->detached == DETACHED) {
-        printf("detached free\n");
-        munmap(thread->stack, STACK_SIZE);
-        munmap(thread, sizeof(mythread_t));
-    }
-
+    print_mythread(thread);
     return 0;
 }
 
@@ -52,11 +37,23 @@ int mythread_create(mythread_t* thread, mythread_routine_t routine, void* arg, i
 
     int child_pid = clone(mythread_startup, thread->stack + STACK_SIZE - sizeof(mythread_t),
                           CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD, (void*)new_thread);
-
     if (child_pid == -1) {
         perror("Fail to clone thread");
-        munmap(thread->stack, STACK_SIZE);
+        if (munmap(thread->stack, STACK_SIZE) == -1) {
+            perror("Fail to unmap stack");
+        }
         return -1;
+    }
+
+    if (thread->detached == DETACHED) {
+        while (!new_thread->exited) {
+            usleep(200000);     // 0.2 sec
+            printf("mythread_create [%d]: wait detached thread..\n", new_thread->tid);
+        }
+        if (munmap(thread->stack, STACK_SIZE) == -1) {
+            perror("Fail to unmap stack");
+            return -1;
+        }
     }
 
     return 0;
@@ -68,7 +65,7 @@ int mythread_join(mythread_t* thread, void** ret) {
         return -1;
     }
 
-    mythread_t* new_thread = (thread->stack + STACK_SIZE - sizeof(mythread_t));
+    mythread_t* new_thread = thread->stack + STACK_SIZE - sizeof(mythread_t);
 
     while (!new_thread->exited) {
         usleep(200000);     // 0.2 sec
@@ -80,7 +77,6 @@ int mythread_join(mythread_t* thread, void** ret) {
         *ret = thread->ret;
     }
 
-    printf("joinable free\n");
     if (munmap(thread->stack, STACK_SIZE) == -1) {
         perror("Fail to unmap stack\n");
         return -1;

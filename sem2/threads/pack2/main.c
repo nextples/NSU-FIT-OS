@@ -9,7 +9,6 @@ void* example_routine1(void* arg) {
 
 void* example_routine2(void* arg) {
     printf("Second example routine...\n");
-    sleep(3);
     return NULL;
 }
 
@@ -39,7 +38,7 @@ int main() {
         printf("Fail to join mythread");
         return -1;
     }
-    printf("main: join thread %d\n", my_kernel_thread2.tid);
+    printf("main: join thread %d\n", my_kernel_thread1.tid);
 
-    pthread_exit(NULL);
+    return 0;
 }

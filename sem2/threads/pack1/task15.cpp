@@ -79,6 +79,7 @@ int main() {
 
     sleep(3);
 
+    pthread_kill(tid3, SIGINT);
     pthread_kill(tid3, SIGQUIT);
 
     pthread_join(tid1, NULL);
