@@ -2,18 +2,60 @@
 #include "mythread.h"
 #include <sys/wait.h>
 #include <string.h>
+#include <signal.h>
+#include <sys/syscall.h>
+#include <sys/mman.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <threads.h>
+
+thread_local mythread_t* current_thread;
 
 void print_mythread(mythread_t* thread) {
-     printf("mythread_t {\n\ttid: %d,\n\tstack: %p,\n\troutine: %p,\n\targ: %p,\n\tret: %p,\n\texited: %d,\n\tdetached: %d\n}\n",
-         thread->tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->detached);
+     printf("mythread_t {\n\tmy_tid: %d,\n\tstack: %p,\n\troutine: %p,\n\targ: %p,\n\tret: %p,\n\texited: %d,\n\tdetached: %d,\n\ttid: %d,\n\tcanceled: %d\n}\n",
+         thread->my_tid, thread->stack, thread->routine, thread->arg, thread->ret, thread->exited, thread->detached, thread->tid, thread->canceled);
+}
+
+void mythread_exit(mythread_t* thread, void* retval) {
+    thread->ret = retval;
+    thread->exited = 1;
+    if (thread->detached == DETACHED) {
+        if (munmap(thread->stack, STACK_SIZE) == -1) {
+            perror("Fail to unmap stack");
+        }
+    }
+    syscall(SYS_exit, 0);
+}
+
+void mythread_handle_cancel(int sig) {
+    printf("mythread_handle_cancel: thread [%d] get signal\n", gettid());
+
+    mythread_t* thread = current_thread;
+    if (thread) {
+        printf("thread [%d] received cancel signal\n", thread->tid);
+        longjmp(thread->context, 1);
+    }
 }
 
 int mythread_startup(void* arg) {
     mythread_t* thread = (mythread_t*)arg;
+    current_thread = thread;
+    thread->tid = gettid();
 
-    thread->ret = thread->routine(thread->arg);
-    thread->exited = 1;
-    print_mythread(thread);
+    struct sigaction act;
+    act.sa_handler = mythread_handle_cancel;
+    sigemptyset(&act.sa_mask);
+    act.sa_flags = 0;
+    sigaction(SIGUSR1, &act, NULL);
+
+    if (setjmp(thread->context) == 0) {
+        thread->ret = thread->routine(thread->arg);
+    } else {
+        printf("thread [%d] canceled before completion\n", thread->tid);
+        mythread_exit(thread, (void*)CANCELED);
+    }
+
+    mythread_exit(thread, thread->ret);
     return 0;
 }
 
@@ -26,34 +68,25 @@ int mythread_create(mythread_t* thread, mythread_routine_t routine, void* arg, i
         return -1;
     }
 
-    thread->tid = my_tid++;
+    thread->my_tid = my_tid++;
     thread->routine = routine;
     thread->arg = arg;
     thread->exited = 0;
     thread->detached = type;
+    thread->canceled = 0;
 
     mythread_t* new_thread = thread->stack + STACK_SIZE - sizeof(mythread_t);
     *new_thread = *thread;
 
-    int child_pid = clone(mythread_startup, thread->stack + STACK_SIZE - sizeof(mythread_t),
+    thread->tid = clone(mythread_startup, thread->stack + STACK_SIZE - sizeof(mythread_t),
                           CLONE_VM | CLONE_FS | CLONE_FILES | CLONE_SIGHAND | CLONE_THREAD, (void*)new_thread);
-    if (child_pid == -1) {
+
+    if ( thread->tid == -1) {
         perror("Fail to clone thread");
         if (munmap(thread->stack, STACK_SIZE) == -1) {
             perror("Fail to unmap stack");
         }
         return -1;
-    }
-
-    if (thread->detached == DETACHED) {
-        while (!new_thread->exited) {
-            usleep(200000);     // 0.2 sec
-            printf("mythread_create [%d]: wait detached thread..\n", new_thread->tid);
-        }
-        if (munmap(thread->stack, STACK_SIZE) == -1) {
-            perror("Fail to unmap stack");
-            return -1;
-        }
     }
 
     return 0;
@@ -69,7 +102,7 @@ int mythread_join(mythread_t* thread, void** ret) {
 
     while (!new_thread->exited) {
         usleep(200000);     // 0.2 sec
-        printf("mythread_join [%d]: wait..\n", new_thread->tid);
+        printf("mythread_join [%d]: wait..\n", new_thread->my_tid);
     }
 
     *thread = *new_thread;
@@ -91,5 +124,20 @@ int mythread_detach(mythread_t* thread) {
         return -1;
     }
     thread->detached = DETACHED;
+    return 0;
+}
+
+int mythread_cancel(mythread_t* thread) {
+    if (thread->exited) {
+        printf("Thread [%d] already exited\n", thread->my_tid);
+        return -1;
+    }
+
+    thread->canceled = 1;
+    if (kill(thread->tid, SIGUSR1) == -1) {
+        perror("Failed to send cancel signal");
+        return -1;
+    }
+
     return 0;
 }
