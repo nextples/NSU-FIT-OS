@@ -1,5 +1,5 @@
-#ifndef __FITOS_QUEUE_H__
-#define __FITOS_QUEUE_H__
+#ifndef BLOCKING_QUEUE_H
+#define BLOCKING_QUEUE_H
 
 #define _GNU_SOURCE
 #include <stdio.h>
@@ -19,6 +19,9 @@ typedef struct _Queue {
     qnode_t *last;
 
     pthread_t qmonitor_tid;
+    pthread_mutex_t lock;
+    pthread_cond_t not_empty;
+    pthread_cond_t not_full;
 
     int count;
     int max_count;
@@ -28,12 +31,12 @@ typedef struct _Queue {
     long get_attempts;
     long add_count;
     long get_count;
-} queue_t;
+} blocking_queue_t;
 
-queue_t* queue_init(int max_count);
-void queue_destroy(queue_t **q);
-int queue_add(queue_t *q, int val);
-int queue_get(queue_t *q, int *val);
-void queue_print_stats(queue_t *q);
+blocking_queue_t* blocking_queue_init(int max_count);
+void blocking_queue_destroy(blocking_queue_t **q);
+int blocking_queue_add(blocking_queue_t *q, int val);
+int blocking_queue_get(blocking_queue_t *q, int *val);
+void blocking_queue_print_stats(blocking_queue_t *q);
 
-#endif		// __FITOS_QUEUE_H__
+#endif //BLOCKING_QUEUE_H
