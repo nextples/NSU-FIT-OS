@@ -1,20 +1,39 @@
+#define _GNU_SOURCE
 #include <pthread.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <sched.h>
 
 #include "list.h"
 
 #define THREAD_COUNT 6
-#define STORAGE_SIZE 100000
+#define STORAGE_SIZE 1000
 
+void set_cpu(int n) {
+    int err;
+    cpu_set_t cpuset;
+    pthread_t tid = pthread_self();
+
+    CPU_ZERO(&cpuset);
+    CPU_SET(n, &cpuset);
+
+    err = pthread_setaffinity_np(tid, sizeof(cpu_set_t), &cpuset);
+    if (err) {
+        printf("set_cpu: pthread_setaffinity failed for cpu %d\n", n);
+        return;
+    }
+
+    printf("set_cpu: set cpu %d\n", n);
+}
 
 int ascending_count = 0;
 int ascending_iter = 0;
 
 void *ascending_routine(void *args) {
+    set_cpu(4);
     list_t *list = (list_t *) args;
 
     while (true) {
@@ -43,6 +62,7 @@ int descending_count = 0;
 int descending_iter = 0;
 
 void *descending_routine(void *args) {
+    set_cpu(5);
     list_t *list = (list_t *) args;
 
     while (true) {
@@ -71,6 +91,7 @@ int equal_count = 0;
 int equal_iter = 0;
 
 void *equal_routine(void    *args) {
+    set_cpu(6);
     list_t *list = (list_t *) args;
 
     while (true) {
@@ -99,6 +120,7 @@ int swap_count = 0;
 int swap_iter = 0;
 
 void *swap_routine(void *args) {
+    set_cpu(7);
     list_t *list = (list_t *) args;
 
     while (true) {
